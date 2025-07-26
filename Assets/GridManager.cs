@@ -2,7 +2,11 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using Unity.VisualScripting;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
+using Sequence = DG.Tweening.Sequence;
 
 public class GridManager : MonoBehaviour
 {
@@ -13,10 +17,13 @@ public class GridManager : MonoBehaviour
     [SerializeField] private int height = 8;
     [SerializeField] private float cellSize = 1f;
     [SerializeField] private Vector2 gridOffset = Vector2.zero;
-    [SerializeField] private GameObject[] objectPrefabs;
+    [SerializeField] private GameObject blockPrefab;
     [SerializeField] private Color gridColor = Color.white;
     [SerializeField] private int initialSpawnCount = 2;
-
+    [SerializeField] private SpawnRulesSO rules;
+    [SerializeField] private SpawnProbabilitySO rulesProbability;
+    
+    public int currentMove;
     private GridCell[,] grid;
 
     void Awake()
@@ -31,15 +38,6 @@ public class GridManager : MonoBehaviour
         InitializeGrid();
         SpawnInitialObjects();
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            MoveAllObjectsUp();
-        }
-    }
-
     void InitializeGrid()
     {
         grid = new GridCell[width, height];
@@ -54,7 +52,9 @@ public class GridManager : MonoBehaviour
 
     void SpawnInitialObjects()
     {
-        for (int i = 0; i < initialSpawnCount; i++)
+        int blocksToSpawn = rulesProbability.GetBlocksToSpawn(currentMove);
+        Debug.LogError(blocksToSpawn);
+        for (int i = 0; i < blocksToSpawn; i++)
         {
             int randomX = Random.Range(0, width);
             if (grid[randomX, 0].IsEmpty)
@@ -65,7 +65,8 @@ public class GridManager : MonoBehaviour
     }
     public void MoveAllObjectsUp()
     {
-        for (int y = height - 2; y >= 0; y--) // идём снизу вверх (чтобы не перезаписывать)
+        bool moved = false;
+        for (int y = height - 2; y >= 0; y--)
         {
             for (int x = 0; x < width; x++)
             {
@@ -79,19 +80,28 @@ public class GridManager : MonoBehaviour
                     {
                         if (MoveObject(fromPos, Direction.Up))
                         {
+                            moved = true;
                             CheckMatches(toPos);
-                            SpawnInitialObjects();
                         }
                     }
                 }
             }
         }
+        if (!moved)
+        {
+            Debug.LogWarning("No objects moved, so no spawn!");
+        }
+
+        if (moved) SpawnInitialObjects(); // ✅ Только один раз
     }
+
 
     public void SpawnRandomObject(int x, int y)
     {
-        GameObject prefab = objectPrefabs[Random.Range(0, objectPrefabs.Length)];
-        GameObject obj = Instantiate(prefab, GetCellCenter(x, y), Quaternion.identity);
+        Block[] allowedBlocks = rules.GetAllowedNumbers(currentMove);
+        Block chosenBlock = allowedBlocks[Random.Range(0, allowedBlocks.Length)];
+        GameObject obj = Instantiate(blockPrefab, GetCellCenter(x, y), Quaternion.identity);
+        obj.GetComponent<GridObject>().Init(chosenBlock.id,chosenBlock.color);
         grid[x, y].Fill(obj);
     }
 
@@ -103,10 +113,11 @@ public class GridManager : MonoBehaviour
         Direction dir = GetDirectionFromVector(hitDirection);
         if (MoveObject(fromPos, dir))
         {
-            CheckMatches(fromPos);
+            Vector2Int toPos = GetNeighborPosition(fromPos, dir);
+            CheckMatches(toPos);
+            Debug.LogWarning("Hello");
         }
     }
-
     bool MoveObject(Vector2Int fromPos, Direction dir)
     {
         Vector2Int toPos = GetNeighborPosition(fromPos, dir);
@@ -121,12 +132,27 @@ public class GridManager : MonoBehaviour
 
         fromCell.Clear();
         toCell.Fill(obj);
-
-        obj.transform.position = GetCellCenter(toPos.x, toPos.y);
+        // 2. Создаем анимацию
+        Sequence moveSequence = DOTween.Sequence();
+    
+        // Анимация движения к новой позиции
+        moveSequence.Append(obj.transform.DOMove(
+                GetCellCenter(toPos.x, toPos.y), 
+                0.5f)
+            .SetEase(Ease.OutQuad));
+    
+        // Анимация "встряски" (по желанию)
+        moveSequence.Join(obj.transform.DOShakeScale(
+                0.3f, 
+                0.4f, 
+                10, 
+                90f, 
+                true)
+            .SetEase(Ease.OutElastic));
+        
         return true;
     }
-
-    void CheckMatches(Vector2Int startPos)
+    public void CheckMatches(Vector2Int startPos)
     {
         var obj = grid[startPos.x, startPos.y].content;
         if (obj == null) return;
@@ -136,60 +162,52 @@ public class GridManager : MonoBehaviour
 
         if (matches.Count >= 2) // Минимум 2 для матча
         {
-            StartCoroutine(AnimateAndDestroyMatches(matches, 0.5f));
+            MergeAnimation(matches,0.5f);
             print($"Match found! Count: {matches.Count}");
-            SpawnInitialObjects();
         }
     }
 
-    IEnumerator AnimateAndDestroyMatches(List<GridCell> matches, float duration)
+    public void MergeAnimation(List<GridCell> matches, float duration)
     {
-        // Сохраняем ссылки на объекты
         List<GameObject> objs = new List<GameObject>();
+        Vector3 centerPoint = Vector3.zero;
+
         foreach (var cell in matches)
         {
             if (cell.content != null)
             {
                 objs.Add(cell.content);
-
-                // ✅ Подсветка
-                var renderer = cell.content.GetComponent<SpriteRenderer>();
-                if (renderer != null)
-                    renderer.color = Color.red;
+                centerPoint += cell.content.transform.position;
             }
         }
+        centerPoint /= objs.Count;
 
-        // ✅ Анимация уменьшения
-        float elapsed = 0f;
-        Vector3 startScale = Vector3.one;
-        Vector3 endScale = Vector3.zero;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-
-            foreach (var obj in objs)
-            {
-                if (obj != null)
-                    obj.transform.localScale = Vector3.Lerp(startScale, endScale, t);
-            }
-
-            yield return null;
-        }
-
-        // ✅ Удаление объектов
         foreach (var cell in matches)
         {
-            if (cell.content != null)
-                Destroy(cell.content);
-            cell.Clear();
-        }
+            GameObject obj = cell.content;
+            if (obj == null) continue;
 
-        // ✅ Спавн новых объектов
+            cell.Clear();
+            var collider = obj.GetComponent<Collider2D>();
+            if (collider != null) collider.enabled = false;
+
+            Sequence mergeSequence = DOTween.Sequence();
+            mergeSequence.Join(obj.transform.DOMove(centerPoint, duration * 0.7f).SetEase(Ease.InQuad));
+            mergeSequence.Join(obj.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InBack));
+
+            var renderer = obj.GetComponent<SpriteRenderer>();
+            if (renderer != null)
+            {
+                mergeSequence.Join(renderer.DOColor(Color.white * 1.5f, duration * 0.3f).SetLoops(2, LoopType.Yoyo));
+            }
+
+            mergeSequence.OnComplete(() => {
+                if (obj != null) Destroy(obj);
+            });
+        }
     }
 
-    List<GridCell> FindMatches(Vector2Int startPos, string Id)
+   List<GridCell> FindMatches(Vector2Int startPos, string Id)
     {
         List<GridCell> matches = new List<GridCell>();
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
@@ -213,24 +231,6 @@ public class GridManager : MonoBehaviour
         }
         return matches;
     }
-
-    IEnumerator RefillGrid()
-    {
-        yield return new WaitForSeconds(0.5f);
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (grid[x, y].IsEmpty)
-                {
-                    SpawnRandomObject(x, y);
-                    yield return new WaitForSeconds(0.05f);
-                }
-            }
-        }
-    }
-
     Vector2Int FindObjectPosition(GameObject obj)
     {
         for (int x = 0; x < width; x++)
@@ -291,11 +291,7 @@ public class GridManager : MonoBehaviour
             0
         );
     }
-
     bool IsWithinGrid(Vector2Int pos) =>
         pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
 }
-
 public enum Direction { Up, Down, Left, Right }
-
-

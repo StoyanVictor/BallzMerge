@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -5,6 +6,7 @@ public class BallController : MonoBehaviour
 {
     [SerializeField] private TrajectoryPredictor trajectory;
     [SerializeField] private float launchForce = 10f;
+    private Vector3 startPosition;
 
     private Rigidbody2D rb;
     private bool isLaunched = false;
@@ -12,6 +14,7 @@ public class BallController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        startPosition = transform.position;
     }
 // Пример вызова из кода мяча при столкновении
     void OnCollisionEnter2D(Collision2D collision)
@@ -24,6 +27,7 @@ public class BallController : MonoBehaviour
             GridManager.Instance.OnBallHit(collision.gameObject, hitDirection);
         }
     }
+
     private void Update()
     {
         if (isLaunched) return; // Если мяч уже запущен, не показываем траекторию
