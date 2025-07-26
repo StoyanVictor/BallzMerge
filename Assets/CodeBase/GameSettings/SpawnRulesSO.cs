@@ -1,5 +1,4 @@
 using UnityEngine;
-
 [CreateAssetMenu(fileName = "SpawnRules", menuName = "Game/SpawnRules")]
 public class SpawnRulesSO : ScriptableObject
 {
@@ -14,7 +13,6 @@ public class SpawnRulesSO : ScriptableObject
                 return rule.availableBlocks;
             }
         }
-        // Если не нашли правило - возвращаем дефолт
         return new Block[]{};
     }
 }
@@ -23,7 +21,7 @@ public class MoveRangeRule
 {
     public int minMove;
     public int maxMove;
-    public Block[] availableBlocks; // Например: [1, 2, 3]
+    public Block[] availableBlocks;
 }
 [System.Serializable]
 public class Block

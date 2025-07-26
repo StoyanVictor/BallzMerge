@@ -1,10 +1,7 @@
 using System;
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
-using Unity.VisualScripting;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 using Sequence = DG.Tweening.Sequence;
 
@@ -19,7 +16,6 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Vector2 gridOffset = Vector2.zero;
     [SerializeField] private GameObject blockPrefab;
     [SerializeField] private Color gridColor = Color.white;
-    [SerializeField] private int initialSpawnCount = 2;
     [SerializeField] private SpawnRulesSO rules;
     [SerializeField] private SpawnProbabilitySO rulesProbability;
     

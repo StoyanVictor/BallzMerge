@@ -27,7 +27,7 @@ public class SpawnProbabilitySO : ScriptableObject
                 }
             }
         }
-        return 1; // по умолчанию 1 блок
+        return 1;
     }
 } 
 
@@ -42,6 +42,6 @@ public class MoveRangeProbability
 [System.Serializable]
 public class Probability
 {
-    public int blockCount;  // Кол-во блоков (1, 2, 3...)
-    public float chance;    // Шанс (например: 60)
+    public int blockCount;
+    public float chance;
 }

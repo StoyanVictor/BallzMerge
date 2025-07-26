@@ -200,6 +200,7 @@ MonoBehaviour:
   originPosition: {x: 0, y: 0}
   cellSizeY: 1.6
   cellSizeX: 1.635
+  objecta: {fileID: 0}
 --- !u!4 &160304164
 Transform:
   m_ObjectHideFlags: 0
@@ -266,7 +267,6 @@ MonoBehaviour:
   blockPrefab: {fileID: 4589048056685882395, guid: fe86a397d5e6c104fa9a3f62aeee6b58,
     type: 3}
   gridColor: {r: 0, g: 1, b: 0.9623866, a: 1}
-  initialSpawnCount: 2
   rules: {fileID: 11400000, guid: f14d0c3ec0beaaf4e87a1f9b9cba4045, type: 2}
   rulesProbability: {fileID: 11400000, guid: 6e0a70804e628f245bb78f61465cbb37, type: 2}
   currentMove: 0
@@ -415,7 +415,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnPos: {fileID: 671901846}
-  ball: {fileID: 5114790863550167239, guid: a4c6ffeeb5b2db04d805084e72bede46, type: 3}
+  ballPrefab: {fileID: 5114790863550167239, guid: a4c6ffeeb5b2db04d805084e72bede46,
+    type: 3}
+  poolSize: 5
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1427,10 +1429,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2925960205830035147}
   - component: {fileID: 4915703784314868922}
   m_Layer: 0
-  m_Name: "\u041A\u043E\u043F\u0438\u044F block"
+  m_Name: Block
   m_TagString: GridObject
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
