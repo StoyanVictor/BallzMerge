@@ -51,3 +51,25 @@ MonoBehaviour:
       id: 3
     - color: {r: 1, g: 0.08776442, b: 0, a: 1}
       id: 4
+  - minMove: 20
+    maxMove: 24
+    availableBlocks:
+    - color: {r: 0, g: 0.78541684, b: 1, a: 1}
+      id: 1
+    - color: {r: 0, g: 1, b: 0.013520718, a: 1}
+      id: 2
+    - color: {r: 1, g: 0.86054224, b: 0, a: 1}
+      id: 3
+    - color: {r: 1, g: 0.08776442, b: 0, a: 1}
+      id: 4
+  - minMove: 25
+    maxMove: 29
+    availableBlocks:
+    - color: {r: 0, g: 0.78541684, b: 1, a: 1}
+      id: 1
+    - color: {r: 0, g: 1, b: 0.013520718, a: 1}
+      id: 2
+    - color: {r: 1, g: 0.86054224, b: 0, a: 1}
+      id: 3
+    - color: {r: 1, g: 0.08776442, b: 0, a: 1}
+      id: 4

@@ -8,7 +8,6 @@ public class GridObject : MonoBehaviour
     [SerializeField] private TextMeshPro numberText;
     
     public string Id;
-    
     public void Init(string id,Color color)
     {
         Id = id;

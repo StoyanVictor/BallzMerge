@@ -49,3 +49,25 @@ MonoBehaviour:
       chance: 50
     - blockCount: 4
       chance: 10
+  - minMove: 20
+    maxMove: 24
+    probabilities:
+    - blockCount: 1
+      chance: 10
+    - blockCount: 2
+      chance: 30
+    - blockCount: 3
+      chance: 50
+    - blockCount: 4
+      chance: 10
+  - minMove: 25
+    maxMove: 29
+    probabilities:
+    - blockCount: 1
+      chance: 10
+    - blockCount: 2
+      chance: 30
+    - blockCount: 3
+      chance: 50
+    - blockCount: 4
+      chance: 10

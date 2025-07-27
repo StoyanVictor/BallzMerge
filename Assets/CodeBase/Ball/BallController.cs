@@ -1,15 +1,18 @@
+using System;
 using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class BallController : MonoBehaviour
 {
     [SerializeField] private TrajectoryPredictor trajectory;
     [SerializeField] private float launchForce = 10f;
-
+    public GridController gridController;
     public bool isLaunched;
     private Rigidbody2D rb;
-
+    
+    
     private IInputHandler inputHandler;
-
+    public Action onCurentMoveIncrease;
+    
     [Header("Platform")]
     [SerializeField] private bool usePcInput = true;
 
@@ -18,24 +21,24 @@ public class BallController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         inputHandler = usePcInput ? new PcInputHandler() : new MobileInputHandler();
     }
-    
+    void Update()
+    {
+        inputHandler.Update();
+        if (isLaunched) return;
+        CheckForAiming();
+    }
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("GridObject"))
         {
-            // Получаем направление удара (нормализованный вектор от центра мяча)
             Vector2 hitDirection = (collision.transform.position - transform.position).normalized;
         
-            GridManager.Instance.OnBallHit(collision.gameObject, hitDirection);
+            gridController.OnBallHit(collision.gameObject, hitDirection);
+            GameEvents.BallHits();
         }
     }
-    
-    void Update()
+    private void CheckForAiming()
     {
-        inputHandler.Update();
-
-        if (isLaunched) return;
-
         if (inputHandler.IsAiming)
         {
             trajectory.ShowTrajectory(transform.position, inputHandler.GetDirection(transform.position));
@@ -49,7 +52,9 @@ public class BallController : MonoBehaviour
 
     private void LaunchBall(Vector2 direction)
     {
+        onCurentMoveIncrease?.Invoke();
         rb.AddForce(direction * launchForce, ForceMode2D.Impulse);
         isLaunched = true;
     }
+    
 }
