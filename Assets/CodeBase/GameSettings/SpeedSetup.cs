@@ -16,7 +16,6 @@ public class SpeedSetup : MonoBehaviour
             isActive = false;
         }
     }
-
     private void Start()
     {
         Time.timeScale = 2;
